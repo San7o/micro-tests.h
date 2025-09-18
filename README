@@ -30,8 +30,8 @@ Do this:
 
   #define MICRO_TESTS_IMPLEMENTATION
 
-before you include this file in *one* C or C++ file to create the
-implementation.
+before you include the header file in *one* C or C++ file to create
+the implementation.
 
 i.e. it should look like this:
 
@@ -42,12 +42,12 @@ i.e. it should look like this:
   #include "micro-tests.h"
 
 You can tune the library by #defining certain values. See the
-"Config" comments under "Configuration" below.
+"Config" comments under "Configuration" in the header.
 
 !!IMPORTANT: READ THIS FOR MULTITHREADING !!
 Multithreading execution is optional, if you want to support
 multiple threads, then define MICRO_TESTS_MULTITHREADED before
-including this file.
+including the header file.
 
 ```
 #define MICRO_TESTS_MULTITHREADED
