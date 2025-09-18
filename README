@@ -1,0 +1,99 @@
+micro-tests.h
+-------------
+
+Lightweight, header-only testing framework written in C99, with
+multithread support and run-time settings. Perfect for small to
+medium projects where you want quick, painless testing without
+bringing in a heavy framework.
+
+Author:  Giovanni Santini
+Mail:    giovanni.santini@proton.me
+License: MIT
+
+
+Features
+--------
+
+- Single-header + tiny linker script
+- Automatic test registration — no boilerplate needed.
+- Organize tests into suites for cleaner structure.
+- Optional multithreaded execution to speed up large test sets.
+- Command-line controls:
+  - Run a specific suite or test
+  - List available tests
+
+
+Usage
+-----
+
+Do this:
+
+  #define MICRO_TESTS_IMPLEMENTATION
+
+before you include this file in *one* C or C++ file to create the
+implementation.
+
+i.e. it should look like this:
+
+  #include ...
+  #include ...
+  #include ...
+  #define MICRO_TESTS_IMPLEMENTATION
+  #include "micro-tests.h"
+
+You can tune the library by #defining certain values. See the
+"Config" comments under "Configuration" below.
+
+!!IMPORTANT: READ THIS FOR MULTITHREADING !!
+Multithreading execution is optional, if you want to support
+multiple threads, then define MICRO_TESTS_MULTITHREADED before
+including this file.
+
+```
+#define MICRO_TESTS_MULTITHREADED
+```
+
+You define a test like this:
+
+```
+TEST(suite_name, test_name)
+{
+  ASSERT(1);
+  TEST_SUCCESS;
+}
+```
+
+A test should terminate with either TEST_SUCCESS or TEST_FAILED.
+
+To run the tests, you need to either call micro_tests_run(argc,
+arv), or use the MICRO_TESTS_MAIN macro. The return value will be
+the number of failed tests (0 on success).
+
+```
+#define MICRO_TESTS_MAIN
+    int main(int argc, char **argv) { return micro_tests_run(argc, argv); }
+```
+
+!!IMPORTANT: THE TESTS WILL NOT BE REGISTERED IF YOU DO NOT DO THIS!!
+To automatically register the tests, you need to add the linker
+script `mini-tests.ld` to your linker, for example by adding
+"-Wl,-T,micro-tests.ld" when building.
+
+You can finally run the executable, and specify (optional) flags:
+
+```
+$ ./test --help
+micro-tests usage:
+
+ --help,-h             show help message
+ --list                list tests
+ --suite <suite-name>  run a specific suite
+ --test  <test-name>   run a specific test
+ --multithreaded       run tests on multiple threads
+ --threads <n>         specify the number n of threads (use with --multithreaded)
+ --no-banner           do not print the banner
+ --debug               additional debug prints
+```
+
+Check out more examples at the end of the header.
+
