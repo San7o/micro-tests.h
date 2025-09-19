@@ -21,7 +21,9 @@ Features
 - Command-line controls:
   - Run a specific suite or test
   - List available tests
-
+  - Enable Multithreading
+  - Number of threads
+  - Output settings
 
 Usage
 -----
@@ -93,6 +95,7 @@ micro-tests usage:
  --threads <n>         specify the number n of threads (use with --multithreaded)
  --no-banner           do not print the banner
  --debug               additional debug prints
+ --quiet               do not print OK results
 ```
 
 Check out more examples at the end of the header.

@@ -24,7 +24,9 @@
 // - Command-line controls:
 //   - Run a specific suite or test
 //   - List available tests
-//
+//   - Enable Multithreading
+//   - Number of threads
+//   - Output settings
 //
 // Usage
 // -----
@@ -96,6 +98,7 @@
 //  --threads <n>         specify the number n of threads (use with --multithreaded)
 //  --no-banner           do not print the banner
 //  --debug               additional debug prints
+//  --quiet               do not print OK results
 // ```
 //
 // Check out more examples at the end of the header.
@@ -267,6 +270,8 @@ typedef struct {
   _Bool print_help;
   // Additional debug prints
   _Bool debug;
+  // Whether to not print OK results
+  _Bool quiet;
 } MicroTests;
 
 //
@@ -374,6 +379,7 @@ int micro_tests_parse_args(MicroTests *micro_tests, int argc, char **argv)
     .print_banner      = 1,
     .print_help        = 0,
     .debug             = 0,
+    .quiet             = 0,
   };
 
   for (int i = 1; i < argc; ++i)
@@ -407,6 +413,9 @@ int micro_tests_parse_args(MicroTests *micro_tests, int argc, char **argv)
     } else if (_micro_tests_strcmp(argv[i], "--debug") == 0)
     {
       micro_tests->debug = 1;
+    } else if (_micro_tests_strcmp(argv[i], "--quiet") == 0)
+    {
+      micro_tests->quiet = 1;
 #ifdef MICRO_TESTS_MULTITHREADED
     } else if (_micro_tests_strcmp(argv[i], "--multithreaded") == 0)
     {
@@ -461,7 +470,7 @@ int _micro_tests_run(MicroTests *micro_tests)
         fprintf(stderr, "suite: %s, test: %s FAILED\n",
                 current->test_suite,
                 current->test_name);
-      } else {
+      } else if (!micro_tests->quiet) {
         printf("suite: %s, test: %s OK\n",
                current->test_suite,
                current->test_name);
@@ -530,7 +539,7 @@ void *_micro_tests_thread(void *args)
       fprintf(stderr, "suite: %s test: %s FAILED\n",
               micro_test->test_suite,
               micro_test->test_name);
-    } else {
+    } else if (!micro_tests->quiet) {
       printf("suite: %s, test: %s OK\n",
              micro_test->test_suite,
              micro_test->test_name);
@@ -638,6 +647,7 @@ void micro_tests_print_help(void)
 #endif // MICRO_TESTS_MULTITHREADED
   printf("  --no-banner           do not print the banner\n");
   printf("  --debug               additional debug prints\n");
+  printf("  --quiet               do not print OK results\n");
 }
 
 void micro_tests_show_list(MicroTests *micro_tests)
