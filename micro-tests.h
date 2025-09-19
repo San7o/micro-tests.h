@@ -552,7 +552,8 @@ void *_micro_tests_thread(void *args)
 
 int _micro_tests_run_multithreaded(MicroTests *micro_tests)
 {
-  printf("Running multithreaded with %d threads.\n\n", micro_tests->thread_number);
+  if (micro_tests->print_banner)
+    printf("Running multithreaded with %d threads.\n\n", micro_tests->thread_number);
 
   if (pthread_mutex_init(&micro_tests_current_mutex, NULL) < 0)
   {
