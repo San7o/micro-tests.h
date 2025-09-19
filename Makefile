@@ -1,8 +1,8 @@
 ## --- Settings ---
 
-CFLAGS=-Wall -Werror -Wpedantic -ggdb
+CFLAGS=-Wall -Werror -Wpedantic -ggdb -std=c99
 LDFLAGS=
-CC=clang
+CC=gcc
 
 OUT_NAME=test
 OBJ=test.o\

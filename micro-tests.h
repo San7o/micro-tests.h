@@ -183,6 +183,12 @@ extern "C" {
     }                           \
   } while(0)
 
+#if __STDC_VERSION__ >= 201112L
+  #define ALIGNOF(T) _Alignof(T)
+#else
+  #define ALIGNOF(T) __alignof__(T)
+#endif
+  
 // Register a test case
 //
 // Args:
@@ -196,7 +202,7 @@ extern "C" {
 #define TEST(__suite_name, __test_name)                        \
   static int __suite_name##_##__test_name(void);               \
   static MicroTest __micro_test_record_##__suite_name##_##__test_name   \
-  __attribute__((used, section(".micro_tests"), aligned(sizeof(_Alignof(MicroTest))))) = { \
+  __attribute__((used, section(".micro_tests"), aligned(sizeof(ALIGNOF(MicroTest))))) = { \
     .marker = 0xDeadBeaf,                                      \
     .test_suite = #__suite_name,                               \
     .test_name = #__test_name,                                 \
