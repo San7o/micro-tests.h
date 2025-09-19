@@ -479,7 +479,8 @@ int _micro_tests_run(MicroTests *micro_tests)
     }
   }
 
-  printf("\nTests done: %d %s failed\n\n", -out, (out == -1) ? "test" : "tests");
+  if (!micro_tests->quiet)
+    printf("\nTests done: %d %s failed\n\n", -out, (out == -1) ? "test" : "tests");
   return -out;
 }
 
@@ -584,7 +585,8 @@ int _micro_tests_run_multithreaded(MicroTests *micro_tests)
   MICRO_TESTS_FREE(thread_buff);
   pthread_mutex_destroy(&micro_tests_current_mutex);
 
-  printf("\nTests done: %ld %s failed\n\n", -ret, (ret == -1) ? "test" : "tests");
+  if (!micro_tests->quiet)
+    printf("\nTests done: %ld %s failed\n\n", -ret, (ret == -1) ? "test" : "tests");
   return ret;
 }
 #endif // MICRO_TESTS_MULTITHREADED
