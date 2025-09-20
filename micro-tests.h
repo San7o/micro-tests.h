@@ -568,8 +568,8 @@ int _micro_tests_run_multithreaded(MicroTests *micro_tests)
     return -1;
   }
   
-  pthread_t *thread_buff = MICRO_TESTS_CALLOC(sizeof(pthread_t),
-                                              micro_tests->thread_number);
+  pthread_t *thread_buff = MICRO_TESTS_CALLOC(micro_tests->thread_number,
+                                              sizeof(pthread_t));
 
   // Spawn threads
   for (int i = 0; i < micro_tests->thread_number; ++i)
