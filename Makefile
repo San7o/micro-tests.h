@@ -27,7 +27,7 @@ run: $(OUT_NAME)
 # !!! For compilation, you need to add  "-Wl,-T,${MICRO_TESTS_LINKER_SCRIPT}"
 # !!!
 $(OUT_NAME): $(OBJ)
-	$(CC) $(OBJ) $(LDFLAGS) $(CLAGS) -o $(OUT_NAME) -Wl,-T,${MICRO_TESTS_LINKER_SCRIPT}
+	$(CC) $(OBJ) $(LDFLAGS) $(CFLAGS) -o $(OUT_NAME) -Wl,-T,${MICRO_TESTS_LINKER_SCRIPT}
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@

@@ -1,5 +1,5 @@
 micro-tests.h
--------------
+=============
 
 Lightweight, header-only testing framework written in C99, with
 multithread support and run-time settings. Perfect for small to

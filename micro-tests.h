@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT
 //
 // micro-tests.h
-// -------------
+// =============
 //
 // Lightweight, header-only testing framework written in C99, with
 // multithread support and run-time settings. Perfect for small to
@@ -117,8 +117,8 @@
 //     https://github.com/San7o/micro-headers
 //
 
-#ifndef _MICRO_TESTS_H_
-#define _MICRO_TESTS_H_
+#ifndef MICRO_TESTS
+#define MICRO_TESTS
 
 #define MICRO_TESTS_MAJOR 0
 #define MICRO_TESTS_MINOR 1
@@ -135,6 +135,13 @@ extern "C" {
 // Config
 //
 
+// Config: Prefix for all functions
+// For function inlining, set this to `static inline` and then define
+// the implementation in all the files
+#ifndef MICRO_TESTS_DEF
+  #define MICRO_TESTS_DEF extern
+#endif
+  
 // Config: Enable --multithreaded runner by defining
 //         MICRO_TESTS_MULTITHREDED
 //
@@ -280,6 +287,10 @@ typedef struct {
   _Bool run_multithreaded;
   // Number of threads to use of multithreaded is enabled
   int thread_number;
+  // During runtime, head index of the tests to be executed
+  int current_test_index;
+  // During runtime, mutex for current_test_index
+  pthread_mutex_t current_test_index_mutex;
 #endif
   // Whether to show a list of the tests
   _Bool show_list;
@@ -305,13 +316,14 @@ typedef struct {
 //  - argv: arguments
 //
 // Returns: 0 on success, or a negative value on failure
-int micro_tests_parse_args(MicroTests *micro_tests, int argc, char **argv);
+MICRO_TESTS_DEF int micro_tests_parse_args(MicroTests *micro_tests,
+                                           int argc, char **argv);
 
 // Print a list of the tests and return
 //
 // Args:
 //  - micro_tests: the settings of the testing framework
-void micro_tests_show_list(MicroTests *micro_tests);
+MICRO_TESTS_DEF void micro_tests_show_list(MicroTests *micro_tests);
 
 // Run tests
 //
@@ -320,13 +332,14 @@ void micro_tests_show_list(MicroTests *micro_tests);
 //  - argv: arguments
 //
 // Returns: 0 on success, or the number of failed tests
-int micro_tests_run(int argc, char **argv);
+MICRO_TESTS_DEF int micro_tests_run(int argc, char **argv);
 
-void micro_tests_print_banner(void);
-void micro_tests_print_help(void);
+MICRO_TESTS_DEF void micro_tests_print_banner(void);
+MICRO_TESTS_DEF void micro_tests_print_help(void);
 
-int _micro_tests_run(MicroTests *micro_tests);
-int _micro_tests_strcmp(const char* s1, const char *s2);
+MICRO_TESTS_DEF int _micro_tests_run(MicroTests *micro_tests);
+MICRO_TESTS_DEF int _micro_tests_strcmp(const char* s1,
+                                        const char *s2);
 
 #ifdef MICRO_TESTS_MULTITHREADED
 
@@ -338,7 +351,8 @@ int _micro_tests_strcmp(const char* s1, const char *s2);
 // Returns: a pointer to a MicroTest
 //
 // Notes: Can be called by multiple threads
-MicroTest *_micro_tests_get_next_test(MicroTests *micro_tests);
+MICRO_TESTS_DEF MicroTest*
+_micro_tests_get_next_test(MicroTests *micro_tests);
 
 // A single test runner
 //
@@ -346,7 +360,7 @@ MicroTest *_micro_tests_get_next_test(MicroTests *micro_tests);
 //  - micro_tests: settings for the testing framework
 //
 // Returns: The number of failed tests, casted to a (void*)
-void *_micro_tests_thread(void *micro_tests);
+MICRO_TESTS_DEF void *_micro_tests_thread(void *micro_tests);
 
 // Run the tests with multiple threads
 //
@@ -354,7 +368,8 @@ void *_micro_tests_thread(void *micro_tests);
 //  - micro_tests: settings for the testing framework
 //
 // Returns: The number of failed tests
-int _micro_tests_run_multithreaded(MicroTests *micro_tests);
+MICRO_TESTS_DEF int
+_micro_tests_run_multithreaded(MicroTests *micro_tests);
 
 #endif // MICRO_TESTS_MULTITHREADED
 
@@ -373,7 +388,7 @@ extern char __micro_tests_stop[];
 
 #ifdef MICRO_TESTS_IMPLEMENTATION
 
-int _micro_tests_strcmp(const char* s1, const char *s2)
+MICRO_TESTS_DEF int _micro_tests_strcmp(const char* s1, const char *s2)
 {
   while (*s2 != '\0' && *s1 != '\0')
   {
@@ -384,7 +399,8 @@ int _micro_tests_strcmp(const char* s1, const char *s2)
   return !(*s2 == '\0' && *s1 == '\0');
 }
 
-int micro_tests_parse_args(MicroTests *micro_tests, int argc, char **argv)
+MICRO_TESTS_DEF int micro_tests_parse_args(MicroTests *micro_tests,
+                                           int argc, char **argv)
 {
   // Default values
   *micro_tests = (MicroTests){
@@ -464,7 +480,7 @@ int micro_tests_parse_args(MicroTests *micro_tests, int argc, char **argv)
   return 0;
 }
 
-int _micro_tests_run(MicroTests *micro_tests)
+MICRO_TESTS_DEF int _micro_tests_run(MicroTests *micro_tests)
 {
   int out = 0;
   size_t count = (__micro_tests_stop - __micro_tests_start) / sizeof(MicroTest);
@@ -505,17 +521,15 @@ int _micro_tests_run(MicroTests *micro_tests)
 
 #ifdef MICRO_TESTS_MULTITHREADED
 
-int micro_tests_current = 0;
-pthread_mutex_t micro_tests_current_mutex = PTHREAD_MUTEX_INITIALIZER;
-
-MicroTest *_micro_tests_get_next_test(MicroTests *micro_tests)
+MICRO_TESTS_DEF MicroTest*
+_micro_tests_get_next_test(MicroTests *micro_tests)
 {
-  pthread_mutex_lock(&micro_tests_current_mutex);
+  pthread_mutex_lock(&micro_tests->current_test_index_mutex);
 
   MicroTest* test = (MicroTest*)__micro_tests_start;
   size_t count = (__micro_tests_stop - __micro_tests_start) / sizeof(MicroTest);
 
-  for (int i = micro_tests_current; i < count; ++i)
+  for (int i = micro_tests->current_test_index; i < count; ++i)
   {
     MicroTest* current = &test[i];
     
@@ -528,17 +542,17 @@ MicroTest *_micro_tests_get_next_test(MicroTests *micro_tests)
           _micro_tests_strcmp(micro_tests->run_test, current->test_name) != 0)
         continue;
 
-      micro_tests_current++;
-      pthread_mutex_unlock(&micro_tests_current_mutex);
+      micro_tests->current_test_index++;
+      pthread_mutex_unlock(&micro_tests->current_test_index_mutex);
       return current;
     }
   }
   
-  pthread_mutex_unlock(&micro_tests_current_mutex);
+  pthread_mutex_unlock(&micro_tests->current_test_index_mutex);
   return NULL;
 }
 
-void *_micro_tests_thread(void *args)
+MICRO_TESTS_DEF void *_micro_tests_thread(void *args)
 {
   long ret = 0;
   MicroTests *micro_tests = (MicroTests*) args;
@@ -570,12 +584,16 @@ void *_micro_tests_thread(void *args)
   return (void*)ret; 
 }
 
-int _micro_tests_run_multithreaded(MicroTests *micro_tests)
+MICRO_TESTS_DEF int
+_micro_tests_run_multithreaded(MicroTests *micro_tests)
 {
+  micro_tests->current_test_index = 0;
+  pthread_mutex_init(&micro_tests->current_test_index_mutex, NULL);
+  
   if (micro_tests->print_banner)
     printf("Running multithreaded with %d threads.\n\n", micro_tests->thread_number);
 
-  if (pthread_mutex_init(&micro_tests_current_mutex, NULL) < 0)
+  if (pthread_mutex_init(&micro_tests->current_test_index_mutex, NULL) < 0)
   {
     perror("pthread_mutex_init");
     return -1;
@@ -602,15 +620,17 @@ int _micro_tests_run_multithreaded(MicroTests *micro_tests)
   }
   
   MICRO_TESTS_FREE(thread_buff);
-  pthread_mutex_destroy(&micro_tests_current_mutex);
+  pthread_mutex_destroy(&micro_tests->current_test_index_mutex);
 
   if (!micro_tests->quiet)
     printf("\nTests done: %ld %s failed\n\n", -ret, (ret == -1) ? "test" : "tests");
+
+  pthread_mutex_destroy(&micro_tests->current_test_index_mutex);
   return ret;
 }
 #endif // MICRO_TESTS_MULTITHREADED
 
-int micro_tests_run(int argc, char **argv)
+MICRO_TESTS_DEF int micro_tests_run(int argc, char **argv)
 {
   MicroTests micro_tests;
   
@@ -647,7 +667,7 @@ int micro_tests_run(int argc, char **argv)
   return _micro_tests_run(&micro_tests);
 }
 
-void micro_tests_print_banner(void)
+MICRO_TESTS_DEF void micro_tests_print_banner(void)
 {
   printf("\n");
   printf("micro-tests.h\n");
@@ -657,7 +677,7 @@ void micro_tests_print_banner(void)
   return;
 }
 
-void micro_tests_print_help(void)
+MICRO_TESTS_DEF void micro_tests_print_help(void)
 {
   printf("micro-tests usage:\n");
   printf("\n");
@@ -674,7 +694,7 @@ void micro_tests_print_help(void)
   printf("  --quiet               do not print OK results\n");
 }
 
-void micro_tests_show_list(MicroTests *micro_tests)
+MICRO_TESTS_DEF void micro_tests_show_list(MicroTests *micro_tests)
 {
   size_t count = (__micro_tests_stop - __micro_tests_start) / sizeof(MicroTest);
   MicroTest* test = (MicroTest*)__micro_tests_start;
@@ -740,4 +760,4 @@ MICRO_TESTS_MAIN
 }
 #endif
 
-#endif // _MICRO_TESTS_H_
+#endif // MICRO_TESTS

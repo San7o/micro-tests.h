@@ -2,63 +2,83 @@
 
 #include "micro-tests.h"
 
+#include <unistd.h>
+
+// For debugging purposes
+#define DO_SLEEP
+#ifdef DO_SLEEP
+  #define SLEEP(s) sleep(s)
+#else
+  #define SLEEP(s)
+#endif
+
 TEST(many_tests, test_1)
 {
   ASSERT(1);
+  SLEEP(1);
   TEST_SUCCESS;
 }
 
 TEST(many_tests, test_2)
 {
   ASSERT(1);
+  SLEEP(1);
   TEST_SUCCESS;
 }
 
 TEST(many_tests, test_3)
 {
   ASSERT(1);
+  SLEEP(1);
   TEST_SUCCESS;
 }
 
 TEST(many_tests, test_4)
 {
   ASSERT(1);
+  SLEEP(1);
   TEST_SUCCESS;
 }
 
 TEST(many_tests, test_5)
 {
   ASSERT(1);
+  SLEEP(1);
   TEST_SUCCESS;
 }
 
 TEST(many_tests, test_6)
 {
   ASSERT(1);
+  SLEEP(1);
   TEST_SUCCESS;
 }
 
 TEST(many_tests, test_7)
 {
   ASSERT(1);
+  SLEEP(1);
   TEST_SUCCESS;
 }
 
 TEST(many_tests, test_8)
 {
   ASSERT(1);
+  SLEEP(1);
   TEST_SUCCESS;
 }
 
 TEST(many_tests, test_9)
 {
   ASSERT(1);
+  SLEEP(1);
   TEST_SUCCESS;
 }
 
 TEST(many_tests, test_10)
 {
   ASSERT(1);
+  SLEEP(1);
   TEST_SUCCESS;
 }
 
