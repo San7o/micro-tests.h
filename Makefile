@@ -1,5 +1,11 @@
-## --- Settings ---
+# SPDX-License-Identifier: MIT
+# Author:  Giovanni Santini
+# Mail:    giovanni.santini@proton.me
+# License: MIT
 
+#
+# Compiler flags
+#
 CFLAGS=-Wall -Werror -Wpedantic -ggdb -std=c99
 LDFLAGS=
 CC=gcc
@@ -11,29 +17,29 @@ OBJ=test.o\
 # !!!
 # !!! You need to use this linker script to register the tests !!!
 # !!!
-MICRO_TESTS_LINKER_SCRIPT=micro-tests.ld
+TESTS_LINKER_SCRIPT=micro-tests.ld
+# !!!
+# !!! For compilation, you need to add  "-Wl,-T,${MICRO_TESTS_LINKER_SCRIPT}"
+# !!!
+TESTS_LDFLAGS=-Wl,-T,${TESTS_LINKER_SCRIPT}
 
-## --- Commands ---
-
-# --- Targets ---
-
+#
+# Commands
+#
 all: $(OUT_NAME)
 
 run: $(OUT_NAME)
 	chmod +x $(OUT_NAME)
 	./$(OUT_NAME)
 
-# !!!
-# !!! For compilation, you need to add  "-Wl,-T,${MICRO_TESTS_LINKER_SCRIPT}"
-# !!!
+clean:
+	rm -f $(OBJ)
+
+distclean:
+	rm -f $(OUT_NAME)
+
 $(OUT_NAME): $(OBJ)
-	$(CC) $(OBJ) $(LDFLAGS) $(CFLAGS) -o $(OUT_NAME) -Wl,-T,${MICRO_TESTS_LINKER_SCRIPT}
+	$(CC) $(LDFLAGS) $(TESTS_LDFLAGS) $(CFLAGS) $(OBJ) -o $(OUT_NAME)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
-
-clean:
-	rm $(OBJ) 2>/dev/null || :
-
-distclean:
-	rm $(OUT_NAME) 2>/dev/null || :
