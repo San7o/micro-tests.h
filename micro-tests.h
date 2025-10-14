@@ -132,7 +132,7 @@ extern "C" {
 #include <stdlib.h>
 
 //
-// Config
+// Configuration
 //
 
 // Config: Prefix for all functions
