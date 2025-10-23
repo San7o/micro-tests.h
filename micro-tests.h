@@ -529,7 +529,7 @@ _micro_tests_get_next_test(MicroTests *micro_tests)
   MicroTest* test = (MicroTest*)__micro_tests_start;
   size_t count = (__micro_tests_stop - __micro_tests_start) / sizeof(MicroTest);
 
-  for (int i = micro_tests->current_test_index; i < count; ++i)
+  for (unsigned int i = micro_tests->current_test_index; i < count; ++i)
   {
     MicroTest* current = &test[i];
     
